@@ -13,23 +13,19 @@ exports.create = (text, callback) => {
   //file contents are JUST THE TEXT of the todo object (ie 'get more milk', no JSON formatting)
   //counter.txt should be increasing as new todos are added
   //number of files should increase as new todos are addded
-
-  // var id = counter.getNextUniqueId();
-  // items[id] = text;
-  // callback(null, { id, text });
-
-
-  counter.getNextUniqueId((err, data) => {
-    console.log(data);
-    if(err) {
-      throw ('error create');
+  counter.getNextUniqueId((err, id) => {
+    if (err) {
+      throw ('error in create API function');
     } else {
       //figure out the text
       //create a new file named 'data'
       //fs.writeFile(file, data[, options], callback)
-      fs.writeFile(`${data}.txt`, text, (err, data) => {
-        // if (err) throw err;
-        callback(err, data);
+      var dir = path.join(exports.dataDir, `${id}.txt`);
+      fs.writeFile(dir, text, (err, data) => {
+        if (err) {
+          throw err;
+        }
+        callback(null, { id, text });
       });
     }
   });
