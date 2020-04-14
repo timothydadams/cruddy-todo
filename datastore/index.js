@@ -8,9 +8,31 @@ var items = {};
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  var id = counter.getNextUniqueId();
-  items[id] = text;
-  callback(null, { id, text });
+  //save new todos in individual files named in sequential order from getNextUniqueId
+  //save new files in the exports.dataDir path (file name is the ID#)
+  //file contents are JUST THE TEXT of the todo object (ie 'get more milk', no JSON formatting)
+  //counter.txt should be increasing as new todos are added
+  //number of files should increase as new todos are addded
+
+  // var id = counter.getNextUniqueId();
+  // items[id] = text;
+  // callback(null, { id, text });
+
+
+  counter.getNextUniqueId((err, data) => {
+    console.log(data);
+    if(err) {
+      throw ('error create');
+    } else {
+      //figure out the text
+      //create a new file named 'data'
+      //fs.writeFile(file, data[, options], callback)
+      fs.writeFile(`${data}.txt`, text, (err, data) => {
+        // if (err) throw err;
+        callback(err, data);
+      });
+    }
+  });
 };
 
 exports.readAll = (callback) => {

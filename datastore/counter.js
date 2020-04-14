@@ -45,19 +45,12 @@ exports.getNextUniqueId = (callback) => { //parameters are optional
       throw ('error in getNextUniqueId');
     } else {
       writeCounter(data + 1, (err, data) => {
-      //error handling
-        if (err) {
-          callback(err);
-        } else {
-          callback(err, data);
-        }
+        //error handling
+        // if (err) throw err;
+        callback(err, data);
       });
-    }
+    };
   });
-};
-
-
-
-// Configuration -- DO NOT MODIFY //////////////////////////////////////////////
+}
 
 exports.counterFile = path.join(__dirname, 'counter.txt');
