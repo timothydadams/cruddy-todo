@@ -3,7 +3,10 @@ const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
 
-var items = {};
+const Promise = require('bluebird');
+const readFilePromise = Promise.promisify(fs.readFile);
+
+//var items = {};
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
@@ -15,7 +18,7 @@ exports.create = (text, callback) => {
   //number of files should increase as new todos are addded
   counter.getNextUniqueId((err, id) => {
     if (err) {
-      throw ('error in create API function');
+      return callback(err);
     } else {
       //figure out the text
       //create a new file named 'data'
@@ -32,29 +35,70 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
+  //build a list of files in the exports.dataDir directory
+  //each todo id is encoded in the filename
+  //DO NOT read the contents of each file
+  //include a text field in your response to the client & you should use the messages ID from filename
+
+  // OLD READALL - SYNCHRONOUS VERSION
+  // var data = _.map(items, (text, id) => {
+  //   return { id, text };
+  // });
+  // callback(null, data);
+
+  // dir.read??
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) {
+      return callback(err);
+    }
+    //console.log("FILES:", files);
+    var data = _.map(files, (file) => {
+      //extract ID
+      var id = path.basename(file, '.txt');
+      //generate filepath for each file
+      var filePath = path.join(exports.dataDir, file);
+      return readFilePromise(filePath).then((fileData) => {
+        //return obj with id of filename and text property of fileData
+        return {
+          id: id,
+          text: fileData.toString()
+        };
+      });
+    });
+    Promise.all(data).then((items) => callback(null, items), err => callback(err));
   });
-  callback(null, data);
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  //build the txt file with the given id
+  var dirPath = path.join(exports.dataDir, `${counter.idConverter(id)}.txt`);
+  //read the text file for fileData (and conver it to a string)
+  fs.readFile(dirPath, (err, fileData) => {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, {id, text: fileData.toString()});
+  });
 };
 
 exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+  //convert id into full path
+  var filePath = path.join(exports.dataDir, `${counter.idConverter(id)}.txt`);
+  // flag
+  const flag = fs.constants.O_WRONLY | fs.constants.O_TRUNC;
+  fs.writeFile(filePath, text, {flag}, (err) => {
+    if (err) {
+      callback(err);
+    } else {
+      callback(null, {id, text});
+    }
+  });
+
+
+
+
+
+  //   callback(null, { id, text });
 };
 
 exports.delete = (id, callback) => {
