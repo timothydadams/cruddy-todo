@@ -48,3 +48,7 @@ exports.getNextUniqueId = (callback) => { //parameters are optional
 };
 
 exports.counterFile = path.join(__dirname, 'counter.txt');
+
+exports.idConverter = (id) => {
+  return zeroPaddedNumber(Number(id));
+};
