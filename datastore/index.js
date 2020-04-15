@@ -84,7 +84,7 @@ exports.readOne = (id, callback) => {
 exports.update = (id, text, callback) => {
   //convert id into full path
   var filePath = path.join(exports.dataDir, `${counter.idConverter(id)}.txt`);
-  // flag
+  // flag setting for fs.constants...no clue what these mean
   const flag = fs.constants.O_WRONLY | fs.constants.O_TRUNC;
   fs.writeFile(filePath, text, {flag}, (err) => {
     if (err) {
@@ -93,23 +93,21 @@ exports.update = (id, text, callback) => {
       callback(null, {id, text});
     }
   });
-
-
-
-
-
   //   callback(null, { id, text });
 };
 
 exports.delete = (id, callback) => {
-  var item = items[id];
-  delete items[id];
-  if (!item) {
-    // report an error if item not found
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback();
-  }
+
+  var filepath = path.join(exports.dataDir, `${counter.idConverter(id)}.txt`);
+
+  //delete file at the specified path above
+  fs.unlink(filepath, (err) => {
+    if (err) {
+      callback(err);
+    } else {
+      callback();
+    }
+  });
 };
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
