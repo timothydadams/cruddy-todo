@@ -40,18 +40,10 @@ const writeCounter = (count, callback) => {
 
 exports.getNextUniqueId = (callback) => { //parameters are optional
   //should make use of the provided readCounter and writeCounter functions
-  readCounter((err, data) => {
-    if (err) {
-      throw ('error in getNextUniqueId');
-    } else {
-      writeCounter(data + 1, (err, data) => {
-        //error handling
-        if (err) {
-          throw err;
-        }
-        callback(null, data);
-      });
-    }
+  readCounter((err, counter) => {
+    writeCounter(counter + 1, (err, zeroPaddedCounter) => {
+      callback(err, zeroPaddedCounter);
+    });
   });
 };
 
